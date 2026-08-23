@@ -1,0 +1,168 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function validOptionalSessionId(data, userId) {
+      return data.sessionId == null
+        || (data.sessionId is string
+          && data.sessionId.size() > 0
+          && exists(/databases/$(database)/documents/users/$(userId)/sessions/$(data.sessionId)));
+    }
+
+    match /users/{userId} {
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().hasOnly([
+          'uid',
+          'name',
+          'email',
+          'createdAt',
+          'xp',
+          'level',
+          'totalQuestions',
+          'correctAnswers'
+        ])
+        && request.resource.data.uid == userId
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.xp == 0
+        && request.resource.data.level == 1
+        && request.resource.data.totalQuestions == 0
+        && request.resource.data.correctAnswers == 0;
+
+      allow read: if isOwner(userId);
+      allow update, delete: if false;
+
+      match /sessions/{sessionId} {
+        allow create: if isOwner(userId)
+          && request.resource.data.keys().hasOnly([
+            'id',
+            'userId',
+            'title',
+            'materialType',
+            'status',
+            'createdAt',
+            'updatedAt'
+          ])
+          && request.resource.data.id == sessionId
+          && request.resource.data.userId == userId
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0
+          && request.resource.data.title.size() <= 120
+          && request.resource.data.materialType in ['text', 'image', 'pdf']
+          && request.resource.data.status == 'active'
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+
+        allow read: if isOwner(userId);
+
+        allow update: if isOwner(userId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status',
+            'updatedAt'
+          ])
+          && resource.data.status == 'active'
+          && request.resource.data.status == 'completed'
+          && request.resource.data.updatedAt == request.time;
+
+        allow delete: if false;
+
+        match /messages/{messageId} {
+          allow create: if isOwner(userId)
+            && exists(/databases/$(database)/documents/users/$(userId)/sessions/$(sessionId))
+            && request.resource.data.keys().hasOnly([
+              'id',
+              'userId',
+              'sessionId',
+              'role',
+              'content',
+              'createdAt'
+            ])
+            && request.resource.data.id == messageId
+            && request.resource.data.userId == userId
+            && request.resource.data.sessionId == sessionId
+            && request.resource.data.role in ['student', 'assistant']
+            && request.resource.data.content is string
+            && request.resource.data.content.size() > 0
+            && request.resource.data.content.size() <= 12000
+            && request.resource.data.createdAt == request.time;
+
+          allow read: if isOwner(userId);
+          allow update, delete: if false;
+        }
+      }
+
+      match /quizzes/{quizId} {
+        allow create: if isOwner(userId)
+          && request.resource.data.keys().hasOnly([
+            'id',
+            'userId',
+            'sessionId',
+            'title',
+            'questionCount',
+            'questions',
+            'createdAt'
+          ])
+          && request.resource.data.id == quizId
+          && request.resource.data.userId == userId
+          && validOptionalSessionId(request.resource.data, userId)
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0
+          && request.resource.data.title.size() <= 120
+          && request.resource.data.questionCount is int
+          && request.resource.data.questionCount >= 1
+          && request.resource.data.questionCount <= 20
+          && request.resource.data.questions is list
+          && request.resource.data.questions.size() == request.resource.data.questionCount
+          && request.resource.data.createdAt == request.time;
+
+        allow read: if isOwner(userId);
+        allow update, delete: if false;
+      }
+
+      match /quizResults/{resultId} {
+        allow create: if isOwner(userId)
+          && request.resource.data.keys().hasOnly([
+            'id',
+            'userId',
+            'quizId',
+            'sessionId',
+            'selectedOptionIndexes',
+            'correctAnswers',
+            'totalQuestions',
+            'completedAt',
+            'xpEarned'
+          ])
+          && request.resource.data.id == resultId
+          && request.resource.data.userId == userId
+          && request.resource.data.quizId is string
+          && exists(/databases/$(database)/documents/users/$(userId)/quizzes/$(request.resource.data.quizId))
+          && validOptionalSessionId(request.resource.data, userId)
+          && request.resource.data.selectedOptionIndexes is list
+          && request.resource.data.totalQuestions is int
+          && request.resource.data.totalQuestions >= 1
+          && request.resource.data.totalQuestions <= 20
+          && request.resource.data.selectedOptionIndexes.size() == request.resource.data.totalQuestions
+          && request.resource.data.correctAnswers is int
+          && request.resource.data.correctAnswers >= 0
+          && request.resource.data.correctAnswers <= request.resource.data.totalQuestions
+          && request.resource.data.xpEarned is int
+          && request.resource.data.xpEarned >= 0
+          && request.resource.data.xpEarned <= 1000
+          && request.resource.data.completedAt == request.time;
+
+        allow read: if isOwner(userId);
+        allow update, delete: if false;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
