@@ -52,12 +52,14 @@ class FakeTutorRepository implements TutorRepository {
     required String userId,
     required String sessionId,
     required String answer,
+    String? messageId,
   }) async {
     final message = _message(
       userId: userId,
       sessionId: sessionId,
       role: StudyMessageRole.assistant,
       content: answer,
+      id: messageId,
     );
     savedMessages.add(message);
     return message;
@@ -68,10 +70,11 @@ class FakeTutorRepository implements TutorRepository {
     required String sessionId,
     required StudyMessageRole role,
     required String content,
+    String? id,
   }) {
     _messageCount += 1;
     return StudyMessage(
-      id: 'message-$_messageCount',
+      id: id ?? 'message-$_messageCount',
       userId: userId,
       sessionId: sessionId,
       role: role,

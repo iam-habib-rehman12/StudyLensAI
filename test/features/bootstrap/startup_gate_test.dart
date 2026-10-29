@@ -7,7 +7,12 @@ import 'package:studylens_ai/features/shell/application/shell_controller.dart';
 
 import '../../helpers/fake_auth_repository.dart';
 import '../../helpers/fake_bootstrap_service.dart';
+import '../../helpers/fake_document_services.dart';
 import '../../helpers/fake_image_intake_service.dart';
+import '../../helpers/fake_image_analysis_repository.dart';
+import '../../helpers/fake_overview_repositories.dart';
+import '../../helpers/fake_quiz_generation_repository.dart';
+import '../../helpers/fake_quiz_result_repository.dart';
 import '../../helpers/fake_tutor_repository.dart';
 
 void main() {
@@ -33,6 +38,13 @@ void main() {
         shellController: shellController,
         tutorRepository: FakeTutorRepository(),
         imageIntakeService: FakeImageIntakeService(),
+        imageAnalysisRepository: FakeImageAnalysisRepository(),
+        documentIntakeService: FakeDocumentIntakeService(),
+        documentAnalysisRepository: FakeDocumentAnalysisRepository(),
+        quizGenerationRepository: FakeQuizGenerationRepository(),
+        quizResultRepository: FakeQuizResultRepository(),
+        quizRepository: FakeQuizRepository(),
+        sessionRepository: FakeStudySessionRepository(),
       ),
     );
     await tester.pumpAndSettle();

@@ -15,6 +15,7 @@ class TutorController extends ChangeNotifier {
   StudyMessage? _pendingQuestion;
   List<StudyMessage> _pendingHistory = const [];
   String? _completedAnswerAwaitingSave;
+  String? _pendingAnswerMessageId;
   int _requestToken = 0;
   bool _disposed = false;
 
@@ -165,17 +166,22 @@ class TutorController extends ChangeNotifier {
 
   Future<void> _saveCompletedAnswer(String answer, int token) async {
     final sessionId = _state.sessionId;
-    if (sessionId == null) return;
+    final pendingQuestion = _pendingQuestion;
+    if (sessionId == null || pendingQuestion == null) return;
+    final messageId = _pendingAnswerMessageId ??=
+        'answer_${pendingQuestion.id}';
     try {
       final assistantMessage = await _repository.saveAssistantAnswer(
         userId: _userId,
         sessionId: sessionId,
         answer: answer,
+        messageId: messageId,
       );
       if (!_isCurrent(token)) return;
       _pendingQuestion = null;
       _pendingHistory = const [];
       _completedAnswerAwaitingSave = null;
+      _pendingAnswerMessageId = null;
       _setState(
         _state.copyWith(
           status: TutorStatus.ready,

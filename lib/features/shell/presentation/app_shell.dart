@@ -1,27 +1,42 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/routing/app_router.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/app_user.dart';
 import '../../history/presentation/history_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
+import '../../progress/application/study_overview_controller.dart';
 import '../../progress/presentation/progress_screen.dart';
+import '../../quiz/domain/quiz_repository.dart';
+import '../../quiz/domain/quiz_result_repository.dart';
+import '../../study/domain/study_session_repository.dart';
 import '../../study/presentation/study_screen.dart';
-import '../../../core/routing/app_router.dart';
 import '../application/shell_controller.dart';
 
-class AppShell extends StatelessWidget {
+class AppShell extends StatefulWidget {
   const AppShell({
     required this.user,
     required this.authController,
     required this.shellController,
+    required this.sessionRepository,
+    required this.quizRepository,
+    required this.quizResultRepository,
     super.key,
   });
 
   final AppUser user;
   final AuthController authController;
   final ShellController shellController;
+  final StudySessionRepository sessionRepository;
+  final QuizRepository quizRepository;
+  final QuizResultRepository quizResultRepository;
 
+  @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
   static const _destinations = [
     _ShellDestination(
       label: 'Home',
@@ -50,27 +65,78 @@ class AppShell extends StatelessWidget {
     ),
   ];
 
+  late StudyOverviewController _overview;
+
+  @override
+  void initState() {
+    super.initState();
+    _createOverview();
+  }
+
+  void _createOverview() {
+    _overview = StudyOverviewController(
+      widget.user.uid,
+      widget.sessionRepository,
+      widget.quizRepository,
+      widget.quizResultRepository,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant AppShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.user.uid != widget.user.uid) {
+      _overview.dispose();
+      _createOverview();
+    }
+  }
+
+  @override
+  void dispose() {
+    _overview.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     void openTutor() => Navigator.of(context).pushNamed(AppRoutes.tutor);
     void openScan() => Navigator.of(context).pushNamed(AppRoutes.scan);
+    void openDocument() =>
+        Navigator.of(context).pushNamed(AppRoutes.documentAnalysis);
+    void openQuizGenerator() =>
+        Navigator.of(context).pushNamed(AppRoutes.quizGeneration);
 
     final pages = <Widget>[
-      HomeScreen(user: user, onOpenTutor: openTutor, onOpenScan: openScan),
-      StudyScreen(onOpenTutor: openTutor, onOpenScan: openScan),
-      const HistoryScreen(),
-      const ProgressScreen(),
-      ProfileScreen(user: user, authController: authController),
+      HomeScreen(
+        user: widget.user,
+        overview: _overview,
+        onOpenTutor: openTutor,
+        onOpenScan: openScan,
+        onOpenDocument: openDocument,
+        onOpenQuizGenerator: openQuizGenerator,
+      ),
+      StudyScreen(
+        onOpenTutor: openTutor,
+        onOpenScan: openScan,
+        onOpenDocument: openDocument,
+        onOpenQuizGenerator: openQuizGenerator,
+      ),
+      HistoryScreen(overview: _overview),
+      ProgressScreen(overview: _overview),
+      ProfileScreen(
+        user: widget.user,
+        authController: widget.authController,
+      ),
     ];
 
     return ListenableBuilder(
-      listenable: shellController,
+      listenable: widget.shellController,
       builder: (context, _) {
         return LayoutBuilder(
           builder: (context, constraints) {
             final useRail = constraints.maxWidth >= 840;
             final content = IndexedStack(
-              index: shellController.selectedIndex,
+              index: widget.shellController.selectedIndex,
               children: pages,
             );
 
@@ -80,8 +146,8 @@ class AppShell extends StatelessWidget {
                   children: [
                     SafeArea(
                       child: NavigationRail(
-                        selectedIndex: shellController.selectedIndex,
-                        onDestinationSelected: shellController.select,
+                        selectedIndex: widget.shellController.selectedIndex,
+                        onDestinationSelected: widget.shellController.select,
                         extended: constraints.maxWidth >= 1120,
                         groupAlignment: -0.75,
                         labelType: constraints.maxWidth >= 1120
@@ -107,8 +173,8 @@ class AppShell extends StatelessWidget {
             return Scaffold(
               body: content,
               bottomNavigationBar: NavigationBar(
-                selectedIndex: shellController.selectedIndex,
-                onDestinationSelected: shellController.select,
+                selectedIndex: widget.shellController.selectedIndex,
+                onDestinationSelected: widget.shellController.select,
                 destinations: [
                   for (final destination in _destinations)
                     NavigationDestination(

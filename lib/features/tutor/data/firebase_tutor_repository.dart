@@ -88,6 +88,7 @@ class FirebaseTutorRepository implements TutorRepository {
     required String userId,
     required String sessionId,
     required String answer,
+    String? messageId,
   }) async {
     final content = answer.trim();
     if (content.isEmpty) {
@@ -98,7 +99,7 @@ class FirebaseTutorRepository implements TutorRepository {
       );
     }
     final message = StudyMessage(
-      id: _idGenerator.next('message'),
+      id: messageId ?? _idGenerator.next('message'),
       userId: userId,
       sessionId: sessionId,
       role: StudyMessageRole.assistant,

@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:studylens_ai/core/ai/ai_chat_message.dart';
+import 'package:studylens_ai/core/ai/ai_explanation_mode.dart';
 import 'package:studylens_ai/core/ai/ai_service.dart';
 import 'package:studylens_ai/core/utils/id_generator.dart';
 import 'package:studylens_ai/features/study/domain/study_session.dart';
@@ -53,6 +56,13 @@ class _AiServiceFake implements AiService {
   List<AiChatMessage> history = const [];
 
   @override
+  Future<String> generateQuizJson({
+    required String sourceMaterial,
+    required int questionCount,
+    required String difficulty,
+  }) async => '{}';
+
+  @override
   Stream<String> streamTutorResponse({
     required String question,
     required List<AiChatMessage> history,
@@ -60,6 +70,25 @@ class _AiServiceFake implements AiService {
     this.history = history;
     yield 'Force equals mass times acceleration.';
   }
+
+  @override
+  Stream<String> streamDocumentResponse({
+    required Uint8List documentBytes,
+    required String question,
+    required String action,
+    required List<AiChatMessage> history,
+  }) async* {
+    yield 'A document response.';
+  }
+
+  @override
+  Stream<String> streamImageResponse({
+    required Uint8List imageBytes,
+    required String mimeType,
+    required String question,
+    required AiExplanationMode mode,
+    required List<AiChatMessage> history,
+  }) => const Stream.empty();
 }
 
 class _SessionRepositoryFake implements StudySessionRepository {

@@ -7,6 +7,8 @@ import 'package:studylens_ai/features/shell/presentation/app_shell.dart';
 import 'package:studylens_ai/core/routing/app_router.dart';
 
 import '../../helpers/fake_auth_repository.dart';
+import '../../helpers/fake_overview_repositories.dart';
+import '../../helpers/fake_quiz_result_repository.dart';
 
 void main() {
   testWidgets('navigates across the five authenticated destinations', (
@@ -30,6 +32,9 @@ void main() {
           user: user,
           authController: authController,
           shellController: shellController,
+          sessionRepository: FakeStudySessionRepository(),
+          quizRepository: FakeQuizRepository(),
+          quizResultRepository: FakeQuizResultRepository(),
         ),
       ),
     );
@@ -72,6 +77,9 @@ void main() {
           ),
           authController: authController,
           shellController: shellController,
+          sessionRepository: FakeStudySessionRepository(),
+          quizRepository: FakeQuizRepository(),
+          quizResultRepository: FakeQuizResultRepository(),
         ),
       ),
     );
@@ -102,6 +110,9 @@ void main() {
           ),
           authController: authController,
           shellController: shellController,
+          sessionRepository: FakeStudySessionRepository(),
+          quizRepository: FakeQuizRepository(),
+          quizResultRepository: FakeQuizResultRepository(),
         ),
       ),
     );

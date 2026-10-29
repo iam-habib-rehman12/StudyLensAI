@@ -62,6 +62,8 @@ void main() {
       expect(controller.state.messages, hasLength(2));
       expect(repository.streamCalls, 1);
       expect(repository.assistantSaveCalls, 2);
+      expect(repository.assistantMessageIds.toSet(), hasLength(1));
+      expect(repository.assistantMessageIds.first, isNotNull);
     },
   );
 
@@ -106,6 +108,7 @@ class _TutorRepositoryFake implements TutorRepository {
   int studentSaveCalls = 0;
   int assistantSaveCalls = 0;
   int streamCalls = 0;
+  final List<String?> assistantMessageIds = [];
   int _messageCount = 0;
 
   @override
@@ -159,8 +162,10 @@ class _TutorRepositoryFake implements TutorRepository {
     required String userId,
     required String sessionId,
     required String answer,
+    String? messageId,
   }) async {
     assistantSaveCalls += 1;
+    assistantMessageIds.add(messageId);
     if (assistantSaveFailures > 0) {
       assistantSaveFailures -= 1;
       throw const AppException(
@@ -168,18 +173,25 @@ class _TutorRepositoryFake implements TutorRepository {
         message: 'Answer could not be saved.',
       );
     }
-    return _message(userId, sessionId, StudyMessageRole.assistant, answer);
+    return _message(
+      userId,
+      sessionId,
+      StudyMessageRole.assistant,
+      answer,
+      messageId,
+    );
   }
 
   StudyMessage _message(
     String userId,
     String sessionId,
     StudyMessageRole role,
-    String content,
-  ) {
+    String content, [
+    String? messageId,
+  ]) {
     _messageCount += 1;
     return StudyMessage(
-      id: 'message-$_messageCount',
+      id: messageId ?? 'message-$_messageCount',
       userId: userId,
       sessionId: sessionId,
       role: role,

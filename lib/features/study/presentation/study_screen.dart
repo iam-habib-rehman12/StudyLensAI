@@ -7,11 +7,15 @@ class StudyScreen extends StatelessWidget {
   const StudyScreen({
     required this.onOpenTutor,
     required this.onOpenScan,
+    required this.onOpenDocument,
+    required this.onOpenQuizGenerator,
     super.key,
   });
 
   final VoidCallback onOpenTutor;
   final VoidCallback onOpenScan;
+  final VoidCallback onOpenDocument;
+  final VoidCallback onOpenQuizGenerator;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +55,8 @@ class StudyScreen extends StatelessWidget {
                   title: 'Ask PDF',
                   description: 'Summarize and ask questions about documents.',
                   milestone: 'Day 9',
-                  onTap: () => _showScheduled(context, 'Ask PDF', 'Day 9'),
+                  available: true,
+                  onTap: onOpenDocument,
                 ),
                 const SizedBox(height: 12),
                 _StudyToolTile(
@@ -71,8 +76,8 @@ class StudyScreen extends StatelessWidget {
                   description:
                       'Create structured questions from your material.',
                   milestone: 'Days 10-11',
-                  onTap: () =>
-                      _showScheduled(context, 'Quiz generation', 'Days 10-11'),
+                  available: true,
+                  onTap: onOpenQuizGenerator,
                 ),
               ],
             ),
@@ -80,17 +85,6 @@ class StudyScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void _showScheduled(BuildContext context, String feature, String milestone) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text('$feature is scheduled for $milestone.'),
-          showCloseIcon: true,
-        ),
-      );
   }
 }
 

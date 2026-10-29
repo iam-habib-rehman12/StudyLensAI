@@ -4,7 +4,10 @@ import '../../../core/config/app_config.dart';
 import '../../../shared/widgets/brand_mark.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/presentation/auth_gate.dart';
+import '../../quiz/domain/quiz_repository.dart';
+import '../../quiz/domain/quiz_result_repository.dart';
 import '../../shell/application/shell_controller.dart';
+import '../../study/domain/study_session_repository.dart';
 import '../application/bootstrap_controller.dart';
 import '../domain/bootstrap_state.dart';
 
@@ -13,12 +16,18 @@ class StartupGate extends StatelessWidget {
     required this.controller,
     required this.authController,
     required this.shellController,
+    required this.sessionRepository,
+    required this.quizRepository,
+    required this.quizResultRepository,
     super.key,
   });
 
   final BootstrapController controller;
   final AuthController authController;
   final ShellController shellController;
+  final StudySessionRepository sessionRepository;
+  final QuizRepository quizRepository;
+  final QuizResultRepository quizResultRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +40,9 @@ class StartupGate extends StatelessWidget {
           BootstrapStatus.ready => AuthGate(
             controller: authController,
             shellController: shellController,
+            sessionRepository: sessionRepository,
+            quizRepository: quizRepository,
+            quizResultRepository: quizResultRepository,
           ),
           BootstrapStatus.configurationRequired => _ConfigurationView(
             missingKeys: controller.state.missingConfigurationKeys,

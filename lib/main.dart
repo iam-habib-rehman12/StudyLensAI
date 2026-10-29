@@ -11,7 +11,13 @@ import 'features/auth/data/firebase_auth_service.dart';
 import 'features/auth/data/firestore_user_profile_service.dart';
 import 'features/bootstrap/application/bootstrap_controller.dart';
 import 'features/bootstrap/data/firebase_bootstrap_service.dart';
+import 'features/document/data/device_document_intake_service.dart';
+import 'features/document/data/firebase_document_analysis_repository.dart';
+import 'features/quiz/data/firebase_quiz_generation_repository.dart';
+import 'features/quiz/data/firestore_quiz_repository.dart';
+import 'features/quiz/data/firestore_quiz_result_repository.dart';
 import 'features/scan/data/device_image_intake_service.dart';
+import 'features/scan/data/firebase_image_analysis_repository.dart';
 import 'features/shell/application/shell_controller.dart';
 import 'features/study/data/firestore_study_session_repository.dart';
 import 'features/tutor/data/firebase_tutor_repository.dart';
@@ -31,13 +37,36 @@ void main() {
   );
   final shellController = ShellController();
   final imageIntakeService = DeviceImageIntakeService();
+  final documentIntakeService = DeviceDocumentIntakeService();
   final database = FirestoreDocumentDatabase();
+  final aiService = FirebaseAiService();
+  final sessionRepository = FirestoreStudySessionRepository(database);
+  final messageRepository = FirestoreStudyMessageRepository(database);
   final tutorRepository = FirebaseTutorRepository(
-    FirebaseAiService(),
-    FirestoreStudySessionRepository(database),
-    FirestoreStudyMessageRepository(database),
+    aiService,
+    sessionRepository,
+    messageRepository,
     SecureIdGenerator(),
   );
+  final imageAnalysisRepository = FirebaseImageAnalysisRepository(
+    aiService,
+    sessionRepository,
+    messageRepository,
+    SecureIdGenerator(),
+  );
+  final documentAnalysisRepository = FirebaseDocumentAnalysisRepository(
+    aiService,
+    sessionRepository,
+    messageRepository,
+    SecureIdGenerator(),
+  );
+  final quizRepository = FirestoreQuizRepository(database);
+  final quizGenerationRepository = FirebaseQuizGenerationRepository(
+    aiService,
+    quizRepository,
+    SecureIdGenerator(),
+  );
+  final quizResultRepository = FirestoreQuizResultRepository(database);
 
   runApp(
     StudyLensApp(
@@ -46,6 +75,13 @@ void main() {
       shellController: shellController,
       tutorRepository: tutorRepository,
       imageIntakeService: imageIntakeService,
+      imageAnalysisRepository: imageAnalysisRepository,
+      documentIntakeService: documentIntakeService,
+      documentAnalysisRepository: documentAnalysisRepository,
+      quizGenerationRepository: quizGenerationRepository,
+      quizResultRepository: quizResultRepository,
+      quizRepository: quizRepository,
+      sessionRepository: sessionRepository,
     ),
   );
 }

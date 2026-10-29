@@ -1,0 +1,6 @@
+# Copy this file to android/key.properties and fill in real values.
+# android/key.properties and keystore files are ignored by Git.
+storeFile=../keystore/studylens-release.jks
+storePassword=replace-with-keystore-password
+keyAlias=studylens
+keyPassword=replace-with-key-password

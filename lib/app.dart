@@ -9,7 +9,14 @@ import 'features/auth/application/auth_controller.dart';
 import 'features/auth/domain/auth_state.dart';
 import 'features/bootstrap/application/bootstrap_controller.dart';
 import 'features/bootstrap/domain/bootstrap_state.dart';
+import 'features/document/domain/document_analysis_repository.dart';
+import 'features/document/domain/document_intake_service.dart';
+import 'features/quiz/domain/quiz_generation_repository.dart';
+import 'features/quiz/domain/quiz_repository.dart';
+import 'features/quiz/domain/quiz_result_repository.dart';
+import 'features/study/domain/study_session_repository.dart';
 import 'features/scan/domain/image_intake_service.dart';
+import 'features/scan/domain/image_analysis_repository.dart';
 import 'features/shell/application/shell_controller.dart';
 import 'features/tutor/domain/tutor_repository.dart';
 
@@ -20,6 +27,13 @@ class StudyLensApp extends StatefulWidget {
     required this.shellController,
     required this.tutorRepository,
     required this.imageIntakeService,
+    required this.imageAnalysisRepository,
+    required this.documentIntakeService,
+    required this.documentAnalysisRepository,
+    required this.quizGenerationRepository,
+    required this.quizResultRepository,
+    required this.quizRepository,
+    required this.sessionRepository,
     super.key,
   });
 
@@ -28,6 +42,13 @@ class StudyLensApp extends StatefulWidget {
   final ShellController shellController;
   final TutorRepository tutorRepository;
   final ImageIntakeService imageIntakeService;
+  final ImageAnalysisRepository imageAnalysisRepository;
+  final DocumentIntakeService documentIntakeService;
+  final DocumentAnalysisRepository documentAnalysisRepository;
+  final QuizGenerationRepository quizGenerationRepository;
+  final QuizResultRepository quizResultRepository;
+  final QuizRepository quizRepository;
+  final StudySessionRepository sessionRepository;
 
   @override
   State<StudyLensApp> createState() => _StudyLensAppState();
@@ -80,6 +101,13 @@ class _StudyLensAppState extends State<StudyLensApp> {
         shellController: widget.shellController,
         tutorRepository: widget.tutorRepository,
         imageIntakeService: widget.imageIntakeService,
+        imageAnalysisRepository: widget.imageAnalysisRepository,
+        documentIntakeService: widget.documentIntakeService,
+        documentAnalysisRepository: widget.documentAnalysisRepository,
+        quizGenerationRepository: widget.quizGenerationRepository,
+        quizResultRepository: widget.quizResultRepository,
+        quizRepository: widget.quizRepository,
+        sessionRepository: widget.sessionRepository,
       ),
     );
   }

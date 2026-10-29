@@ -63,21 +63,21 @@ score -> View saved progress.
 - Handle granted, denied, permanently denied, and unavailable states.
 - Build capture, preview, retake, and local-only material lifecycle.
 
-### Day 8 - Multimodal image learning
+### Day 8 - Multimodal image learning (complete)
 
 - Attach image bytes plus questions through the AI service.
 - Add explanation-mode and prompt chips from the PSD.
 - Preserve image context for safe follow-up questions.
 - Add offline, empty, rate-limit, and AI failure tests.
 
-### Day 9 - PDF intelligence
+### Day 9 - PDF intelligence (complete)
 
 - Add local PDF selection, type/size validation, and document context.
 - Implement summary, important topics, revision notes, and document Q&A.
 - Keep PDF bytes ephemeral unless optional Storage is enabled later.
 - Handle unsupported, malformed, oversized, and unreadable documents.
 
-### Day 10 - Structured quiz generation
+### Day 10 - Structured quiz generation (complete)
 
 - Implement immutable quiz/question domain models.
 - Define Firebase AI JSON schema and centralized quiz prompt.
@@ -85,14 +85,14 @@ score -> View saved progress.
   explanations, and duplicate questions before presentation.
 - Surface malformed-response errors with recovery actions.
 
-### Day 11 - Quiz player and results
+### Day 11 - Quiz player and results (complete)
 
 - Build quiz setup, question navigation, progress, and submission.
 - Implement deterministic scoring and mistake review.
 - Persist completed results and XP only after successful completion.
 - Test navigation, score calculation, retry, and persistence failures.
 
-### Day 12 - History and progress
+### Day 12 - History and progress (complete)
 
 - Build real Firestore-backed study history and quiz history.
 - Calculate questions, quizzes, sessions, accuracy, XP, and level.

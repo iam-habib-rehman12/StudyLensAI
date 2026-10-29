@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:studylens_ai/features/scan/application/scan_controller.dart';
 import 'package:studylens_ai/features/scan/domain/image_intake_service.dart';
+import 'package:studylens_ai/features/scan/domain/study_image.dart';
 import 'package:studylens_ai/features/scan/presentation/scan_screen.dart';
 
 import '../../helpers/fake_image_intake_service.dart';
@@ -9,9 +10,15 @@ import '../../helpers/fake_image_intake_service.dart';
 void main() {
   testWidgets('captures, previews, and discards a local image', (tester) async {
     final service = FakeImageIntakeService()..capturedImage = testStudyImage();
+    StudyImage? analyzedImage;
 
     await tester.pumpWidget(
-      MaterialApp(home: ScanScreen(controller: ScanController(service))),
+      MaterialApp(
+        home: ScanScreen(
+          controller: ScanController(service),
+          onAnalyzeImage: (image) => analyzedImage = image,
+        ),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -28,6 +35,10 @@ void main() {
     expect(find.byKey(const Key('scan-image-preview')), findsOneWidget);
     expect(find.text('Retake photo'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('Ask StudyLens'));
+    await tester.tap(find.text('Ask StudyLens'));
+    expect(analyzedImage, same(service.capturedImage));
+
     await tester.ensureVisible(find.text('Discard image'));
     await tester.tap(find.text('Discard image'));
     await tester.pumpAndSettle();
@@ -42,7 +53,12 @@ void main() {
       ..currentAccess = CameraAccess.permanentlyDenied;
 
     await tester.pumpWidget(
-      MaterialApp(home: ScanScreen(controller: ScanController(service))),
+      MaterialApp(
+        home: ScanScreen(
+          controller: ScanController(service),
+          onAnalyzeImage: (_) {},
+        ),
+      ),
     );
     await tester.pumpAndSettle();
 

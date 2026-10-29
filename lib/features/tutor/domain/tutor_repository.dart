@@ -22,5 +22,6 @@ abstract interface class TutorRepository {
     required String userId,
     required String sessionId,
     required String answer,
+    String? messageId,
   });
 }

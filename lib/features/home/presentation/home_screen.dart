@@ -4,21 +4,31 @@ import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/brand_mark.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/history_entry_tile.dart';
+import '../../../shared/widgets/overview_status.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../auth/domain/app_user.dart';
+import '../../progress/application/study_overview_controller.dart';
+import '../../progress/domain/progress_summary.dart';
 import 'widgets/feature_action_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     required this.user,
+    required this.overview,
     required this.onOpenTutor,
     required this.onOpenScan,
+    required this.onOpenDocument,
+    required this.onOpenQuizGenerator,
     super.key,
   });
 
   final AppUser user;
+  final StudyOverviewController overview;
   final VoidCallback onOpenTutor;
   final VoidCallback onOpenScan;
+  final VoidCallback onOpenDocument;
+  final VoidCallback onOpenQuizGenerator;
 
   @override
   Widget build(BuildContext context) {
@@ -90,11 +100,7 @@ class HomeScreen extends StatelessWidget {
                           title: 'Ask PDF',
                           subtitle: 'Learn from documents',
                           accentColor: AppColors.warning,
-                          onTap: () => _showScheduledMessage(
-                            context,
-                            'Ask PDF',
-                            'Day 9',
-                          ),
+                          onTap: onOpenDocument,
                         ),
                         FeatureActionCard(
                           icon: Icons.chat_bubble_rounded,
@@ -108,11 +114,7 @@ class HomeScreen extends StatelessWidget {
                           title: 'Generate Quiz',
                           subtitle: 'Test your knowledge',
                           accentColor: AppColors.success,
-                          onTap: () => _showScheduledMessage(
-                            context,
-                            'Quiz generation',
-                            'Days 10-11',
-                          ),
+                          onTap: onOpenQuizGenerator,
                         ),
                       ],
                     );
@@ -121,16 +123,19 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 30),
                 const SectionHeader(title: 'Continue studying'),
                 const SizedBox(height: 14),
-                const EmptyState(
-                  icon: Icons.auto_stories_outlined,
-                  title: 'No study sessions yet',
-                  message: 'Your recent learning material will appear here.',
-                  compact: true,
+                ListenableBuilder(
+                  listenable: overview,
+                  builder: (context, _) =>
+                      _RecentActivity(overview: overview),
                 ),
                 const SizedBox(height: 30),
                 const SectionHeader(title: "Today's progress"),
                 const SizedBox(height: 14),
-                const _TodayProgressCard(),
+                ListenableBuilder(
+                  listenable: overview,
+                  builder: (context, _) =>
+                      _TodayProgressSection(overview: overview),
+                ),
               ],
             ),
           ),
@@ -148,21 +153,6 @@ class HomeScreen extends StatelessWidget {
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
-  }
-
-  void _showScheduledMessage(
-    BuildContext context,
-    String feature,
-    String milestone,
-  ) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text('$feature is scheduled for $milestone.'),
-          showCloseIcon: true,
-        ),
-      );
   }
 }
 
@@ -239,8 +229,70 @@ class _AskStudyLensCard extends StatelessWidget {
   }
 }
 
+class _RecentActivity extends StatelessWidget {
+  const _RecentActivity({required this.overview});
+
+  final StudyOverviewController overview;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = overview.state;
+    if (state.isLoading) {
+      return const OverviewLoading(label: 'Loading your study activity...');
+    }
+    if (state.hasError) {
+      return OverviewFailure(
+        message:
+            state.errorMessage ?? 'StudyLens could not load your activity.',
+        isOffline: state.isOffline,
+        onRetry: overview.retry,
+      );
+    }
+    final entries = overview.history.take(3).toList(growable: false);
+    if (entries.isEmpty) {
+      return const EmptyState(
+        icon: Icons.auto_stories_outlined,
+        title: 'No study sessions yet',
+        message: 'Your recent learning material will appear here.',
+        compact: true,
+      );
+    }
+    return Column(
+      children: [
+        for (final entry in entries)
+          HistoryEntryTile(entry: entry, dense: true),
+      ],
+    );
+  }
+}
+
+class _TodayProgressSection extends StatelessWidget {
+  const _TodayProgressSection({required this.overview});
+
+  final StudyOverviewController overview;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = overview.state;
+    if (state.isLoading) {
+      return const OverviewLoading(label: "Loading today's progress...");
+    }
+    if (state.hasError) {
+      return OverviewFailure(
+        message:
+            state.errorMessage ?? 'StudyLens could not load your progress.',
+        isOffline: state.isOffline,
+        onRetry: overview.retry,
+      );
+    }
+    return _TodayProgressCard(summary: overview.progress);
+  }
+}
+
 class _TodayProgressCard extends StatelessWidget {
-  const _TodayProgressCard();
+  const _TodayProgressCard({required this.summary});
+
+  final ProgressSummary summary;
 
   @override
   Widget build(BuildContext context) {
@@ -250,24 +302,37 @@ class _TodayProgressCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const Row(
+            Row(
               children: [
                 Expanded(
-                  child: _ProgressMetric(value: '0', label: 'Questions'),
+                  child: _ProgressMetric(
+                    value: '${summary.todayQuestions}',
+                    label: 'Questions',
+                  ),
                 ),
-                _MetricDivider(),
+                const _MetricDivider(),
                 Expanded(
-                  child: _ProgressMetric(value: '0', label: 'Quizzes'),
+                  child: _ProgressMetric(
+                    value: '${summary.todayQuizzes}',
+                    label: 'Quizzes',
+                  ),
                 ),
-                _MetricDivider(),
+                const _MetricDivider(),
                 Expanded(
-                  child: _ProgressMetric(value: '—', label: 'Accuracy'),
+                  child: _ProgressMetric(
+                    value: summary.todayQuestions == 0
+                        ? '—'
+                        : '${summary.todayAccuracyPercent}%',
+                    label: 'Accuracy',
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 18),
             Text(
-              'Activity tracking begins when the study tools are available.',
+              summary.totalXp == 0
+                  ? 'Complete a quiz to start tracking progress.'
+                  : 'Level ${summary.level} • ${summary.totalXp} XP total',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,

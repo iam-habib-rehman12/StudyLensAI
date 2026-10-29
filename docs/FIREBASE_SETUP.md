@@ -9,11 +9,11 @@ token, or password belongs in source control.
 1. Create a Firebase project.
 2. Register an Android application with package name
    `com.studylens.studylens_ai`.
-3. In Authentication, enable Email/Password. Authentication UI is scheduled
-   for Day 3.
-4. Create a Cloud Firestore database. The repository allows authenticated
-   students to create/read only their own validated user profile. Feature
-   subcollections remain closed until their persistence milestone.
+3. In Authentication, enable Email/Password.
+4. Create a Cloud Firestore database and publish `firestore.rules`. The rules
+   allow authenticated students to create and read only their own validated
+   profile, sessions, messages, quizzes, and results. All other paths are
+   denied.
 5. In App Check, register the Android application with Play Integrity. Do not
    manually enforce Authentication or Firestore during initial setup. Firebase
    AI Logic onboarding may enforce App Check for its own API, so register the
@@ -94,7 +94,54 @@ Set these values in the local configuration file:
 development computer's LAN address for a physical device. StudyLens routes Auth
 to port `9099` and Firestore to port `8080` when emulator mode is enabled.
 
-## 7. Build gate
+## 7. Release signing
+
+Debug builds use the debug keystore automatically. Release builds require a
+real keystore and fail with an explicit Gradle message while it is missing.
+
+1. Copy `android/key.properties.example` to `android/key.properties`.
+2. Create the keystore (keep it outside source control):
+
+```powershell
+keytool -genkeypair -v -keystore android/keystore/studylens-release.jks `
+  -alias studylens -keyalg RSA -keysize 2048 -validity 10000
+```
+
+3. Fill in `storePassword`, `keyAlias`, and `keyPassword` in
+   `android/key.properties`.
+4. Register the release signing certificate SHA-256 in Firebase Console for
+   App Check Play Integrity.
+
+`android/key.properties`, `*.jks`, and `*.keystore` are ignored by Git.
+
+## 8. Firestore rules tests
+
+The rules are exercised against the Firestore emulator with the Firebase Rules
+Unit Testing SDK. Java 11+ is required for the emulator.
+
+```powershell
+npm ci
+npm run test:rules
+```
+
+The first run downloads a ~130 MB Firestore emulator JAR. If the download
+stalls and the CLI reports `An unexpected error has occurred`, the host is not
+necessarily blocked; the single connection may just be very slow. Download the
+JAR with a download manager or `curl`, verify its MD5, and place it in the
+emulator cache:
+
+```text
+URL:  https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.22.0.jar
+MD5:  5d74cc6bee9e18560d2eae2c6440fd13
+Size: 136707194 bytes
+
+%USERPROFILE%\.cache\firebase\emulators\cloud-firestore-emulator-v1.22.0.jar
+```
+
+Version, URL, size, and checksum for other versions are in
+`node_modules/firebase-tools/lib/emulator/downloadableEmulatorInfo.json`.
+
+## 9. Build gate
 
 Run after configuration or SDK changes:
 

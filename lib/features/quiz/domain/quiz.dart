@@ -8,13 +8,17 @@ class QuizQuestion {
     required this.correctOptionIndex,
     required this.explanation,
   }) : options = List.unmodifiable(options) {
-    if (id.trim().isEmpty || question.trim().isEmpty) {
+    if (id.trim().isEmpty ||
+        question.trim().isEmpty ||
+        question.trim().length > 500) {
       throw ArgumentError(
         'Quiz question identifiers and text cannot be empty.',
       );
     }
     if (this.options.length != 4 ||
-        this.options.any((option) => option.trim().isEmpty) ||
+        this.options.any(
+          (option) => option.trim().isEmpty || option.trim().length > 300,
+        ) ||
         this.options
                 .map((option) => option.trim().toLowerCase())
                 .toSet()
@@ -27,7 +31,7 @@ class QuizQuestion {
         'The correct option index is outside the option list.',
       );
     }
-    if (explanation.trim().isEmpty) {
+    if (explanation.trim().isEmpty || explanation.trim().length > 2000) {
       throw ArgumentError('Every quiz question requires an explanation.');
     }
   }
@@ -75,7 +79,10 @@ class Quiz {
     required this.createdAt,
     this.sessionId,
   }) : questions = List.unmodifiable(questions) {
-    if (id.trim().isEmpty || userId.trim().isEmpty || title.trim().isEmpty) {
+    if (id.trim().isEmpty ||
+        userId.trim().isEmpty ||
+        title.trim().isEmpty ||
+        title.trim().length > 120) {
       throw ArgumentError('Quiz identifiers and title cannot be empty.');
     }
     if (this.questions.isEmpty || this.questions.length > 20) {

@@ -59,8 +59,10 @@ id, userId, quizId, sessionId?, selectedOptionIndexes,
 correctAnswers, totalQuestions, completedAt, xpEarned
 ```
 
-Completed results are immutable. Atomic profile progress updates are scheduled
-with quiz completion in Day 11.
+Completed results are immutable. Each result stores its own `xpEarned`; the
+player writes it with a server timestamp. Day 12 derives questions, quizzes,
+accuracy, XP, and level from these results on the client. The stored profile
+aggregate fields remain read-only in the rules and are not updated.
 
 ## Reliability and security
 

@@ -8,9 +8,14 @@ import '../application/scan_state.dart';
 import '../domain/study_image.dart';
 
 class ScanScreen extends StatefulWidget {
-  const ScanScreen({required this.controller, super.key});
+  const ScanScreen({
+    required this.controller,
+    required this.onAnalyzeImage,
+    super.key,
+  });
 
   final ScanController controller;
+  final ValueChanged<StudyImage> onAnalyzeImage;
 
   @override
   State<ScanScreen> createState() => _ScanScreenState();
@@ -55,6 +60,7 @@ class _ScanScreenState extends State<ScanScreen> {
                             key: const ValueKey('preview'),
                             state: state,
                             controller: widget.controller,
+                            onAnalyzeImage: widget.onAnalyzeImage,
                           ),
                   ),
                 ),
@@ -179,11 +185,13 @@ class _PreviewView extends StatelessWidget {
   const _PreviewView({
     required this.state,
     required this.controller,
+    required this.onAnalyzeImage,
     super.key,
   });
 
   final ScanState state;
   final ScanController controller;
+  final ValueChanged<StudyImage> onAnalyzeImage;
 
   @override
   Widget build(BuildContext context) {
@@ -304,6 +312,13 @@ class _PreviewView extends StatelessWidget {
               ],
               const SizedBox(height: 20),
               FilledButton.icon(
+                key: const Key('ask-studylens-image'),
+                onPressed: state.isBusy ? null : () => onAnalyzeImage(image),
+                icon: const Icon(Icons.auto_awesome_rounded),
+                label: const Text('Ask StudyLens'),
+              ),
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
                 onPressed: state.isBusy ? null : controller.retake,
                 icon: Icon(
                   image.source == StudyImageSource.camera
@@ -317,7 +332,7 @@ class _PreviewView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              OutlinedButton.icon(
+              TextButton.icon(
                 onPressed: state.isBusy ? null : controller.discard,
                 icon: const Icon(Icons.delete_outline_rounded),
                 label: const Text('Discard image'),
