@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -8,10 +10,13 @@ import '../domain/image_intake_service.dart';
 import '../domain/study_image.dart';
 
 class DeviceImageIntakeService implements ImageIntakeService {
-  DeviceImageIntakeService({ImagePicker? picker})
-    : _picker = picker ?? ImagePicker();
+  DeviceImageIntakeService({
+    ImagePicker? picker,
+    this.timeout = const Duration(minutes: 2),
+  }) : _picker = picker ?? ImagePicker();
 
   final ImagePicker _picker;
+  final Duration timeout;
 
   @override
   Future<CameraAccess> cameraAccess() async {
@@ -50,7 +55,7 @@ class DeviceImageIntakeService implements ImageIntakeService {
   @override
   Future<StudyImage?> recoverLostImage() async {
     try {
-      final response = await _picker.retrieveLostData();
+      final response = await _picker.retrieveLostData().timeout(timeout);
       if (response.isEmpty) return null;
       if (response.exception case final exception?) {
         throw _pickerException(exception, StudyImageSource.gallery);
@@ -60,6 +65,13 @@ class DeviceImageIntakeService implements ImageIntakeService {
       return _readImage(files.first, StudyImageSource.gallery);
     } on ImageIntakeException {
       rethrow;
+    } on TimeoutException catch (error) {
+      throw ImageIntakeException(
+        failure: ImageIntakeFailure.invalidImage,
+        type: AppErrorType.offline,
+        message: 'The image picker took too long. Please try again.',
+        cause: error,
+      );
     } catch (error) {
       throw ImageIntakeException(
         failure: ImageIntakeFailure.invalidImage,
@@ -78,15 +90,26 @@ class DeviceImageIntakeService implements ImageIntakeService {
         ? StudyImageSource.camera
         : StudyImageSource.gallery;
     try {
-      final file = await _picker.pickImage(
-        source: source,
-        maxWidth: MediaConfig.imageMaxDimension,
-        maxHeight: MediaConfig.imageMaxDimension,
-        imageQuality: MediaConfig.imageQuality,
-        requestFullMetadata: false,
-      );
+      final file = await _picker
+          .pickImage(
+            source: source,
+            maxWidth: MediaConfig.imageMaxDimension,
+            maxHeight: MediaConfig.imageMaxDimension,
+            imageQuality: MediaConfig.imageQuality,
+            requestFullMetadata: false,
+          )
+          .timeout(timeout);
       if (file == null) return null;
       return _readImage(file, studySource);
+    } on TimeoutException catch (error) {
+      throw ImageIntakeException(
+        failure: studySource == StudyImageSource.camera
+            ? ImageIntakeFailure.cameraUnavailable
+            : ImageIntakeFailure.galleryUnavailable,
+        type: AppErrorType.offline,
+        message: 'The image picker took too long. Please try again.',
+        cause: error,
+      );
     } on PlatformException catch (error) {
       throw _pickerException(error, studySource);
     } on ImageIntakeException {

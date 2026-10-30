@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/ai/ai_explanation_mode.dart';
 import '../../../core/config/ai_config.dart';
+import '../../../shared/widgets/markdown_text.dart';
 import '../../tutor/domain/study_message.dart';
 import '../application/image_analysis_controller.dart';
 import '../application/image_analysis_state.dart';
@@ -119,7 +120,9 @@ class _ImageContextHeader extends StatelessWidget {
             controller.image.bytes,
             width: 58,
             height: 58,
+            cacheWidth: 116,
             fit: BoxFit.cover,
+            semanticLabel: 'Selected study image',
           ),
         ),
         const SizedBox(width: 12),
@@ -274,7 +277,7 @@ class _Bubble extends StatelessWidget {
                 Text('Analyzing image...'),
               ],
             )
-          : Text(
+          : MarkdownText(
               text,
               style: Theme.of(
                 context,
@@ -355,6 +358,7 @@ class _Composer extends StatelessWidget {
           const SizedBox(width: 9),
           IconButton.filled(
             onPressed: enabled ? onSend : null,
+            tooltip: 'Send question',
             icon: const Icon(Icons.arrow_upward_rounded),
           ),
         ],

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 
 import '../../../core/errors/app_exception.dart';
@@ -5,17 +7,20 @@ import '../domain/document_intake_service.dart';
 import '../domain/study_document.dart';
 
 class DeviceDocumentIntakeService implements DocumentIntakeService {
-  DeviceDocumentIntakeService({MethodChannel? channel})
-    : _channel = channel ?? const MethodChannel('studylens/document_picker');
+  DeviceDocumentIntakeService({
+    MethodChannel? channel,
+    this.timeout = const Duration(minutes: 2),
+  }) : _channel = channel ?? const MethodChannel('studylens/document_picker');
 
   final MethodChannel _channel;
+  final Duration timeout;
 
   @override
   Future<StudyDocument?> selectPdf() async {
     try {
-      final response = await _channel.invokeMapMethod<String, Object?>(
-        'selectPdf',
-      );
+      final response = await _channel
+          .invokeMapMethod<String, Object?>('selectPdf')
+          .timeout(timeout);
       if (response == null) return null;
       final name = response['name'];
       final bytes = response['bytes'];
@@ -34,7 +39,7 @@ class DeviceDocumentIntakeService implements DocumentIntakeService {
         throw DocumentIntakeException(
           failure: DocumentIntakeFailure.tooLarge,
           type: AppErrorType.invalidDocument,
-          message: 'That PDF is too large. Choose a document under 14 MB.',
+          message: 'That PDF is too large. Choose a document under 10 MB.',
           cause: error,
         );
       }
@@ -42,6 +47,14 @@ class DeviceDocumentIntakeService implements DocumentIntakeService {
         failure: DocumentIntakeFailure.unavailable,
         type: AppErrorType.unknown,
         message: 'StudyLens could not read that PDF. Choose it again.',
+        cause: error,
+      );
+    } on TimeoutException catch (error) {
+      throw DocumentIntakeException(
+        failure: DocumentIntakeFailure.unavailable,
+        type: AppErrorType.offline,
+        message:
+            'The document picker took too long. Close it and try again.',
         cause: error,
       );
     } catch (error) {

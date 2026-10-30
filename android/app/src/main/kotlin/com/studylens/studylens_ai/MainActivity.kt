@@ -13,7 +13,7 @@ class MainActivity : FlutterActivity() {
     private companion object {
         const val CHANNEL = "studylens/document_picker"
         const val PICK_PDF_REQUEST = 4102
-        const val MAX_PDF_BYTES = 14 * 1024 * 1024
+        const val MAX_PDF_BYTES = 10 * 1024 * 1024
     }
 
     private var pendingResult: MethodChannel.Result? = null
@@ -28,6 +28,11 @@ class MainActivity : FlutterActivity() {
                     result.error("picker_busy", "The document picker is already open.", null)
                 } else {
                     pendingResult = result
+                    // FlutterActivity extends android.app.Activity rather than
+                    // ComponentActivity, so registerForActivityResult is not
+                    // available without changing the base activity. The Dart
+                    // side applies a timeout so a lost result cannot leave the
+                    // UI busy forever.
                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                         addCategory(Intent.CATEGORY_OPENABLE)
                         type = "application/pdf"
@@ -50,10 +55,20 @@ class MainActivity : FlutterActivity() {
         try {
             result.success(readDocument(uri))
         } catch (error: DocumentTooLargeException) {
-            result.error("too_large", "The selected PDF exceeds 14 MB.", null)
+            result.error("too_large", "The selected PDF exceeds 10 MB.", null)
         } catch (error: Exception) {
             result.error("read_failed", "The selected PDF could not be read.", null)
         }
+    }
+
+    override fun onDestroy() {
+        pendingResult?.error(
+            "picker_interrupted",
+            "The document picker was interrupted before it returned.",
+            null,
+        )
+        pendingResult = null
+        super.onDestroy()
     }
 
     private fun readDocument(uri: Uri): Map<String, Any> {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../shared/widgets/markdown_text.dart';
 import '../../tutor/domain/study_message.dart';
 import '../application/document_analysis_controller.dart';
 import '../application/document_analysis_state.dart';
@@ -184,7 +185,7 @@ class _DocumentPickerView extends StatelessWidget {
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    'PDF only • maximum 14 MB • kept in memory only',
+                    'PDF only • maximum 10 MB • kept in memory only',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -307,10 +308,12 @@ class _Conversation extends StatelessWidget {
           state.streamingText.isEmpty)
         const _ThinkingBubble(),
     ];
-    return ListView(
-      controller: controller,
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
-      children: entries,
+    return SelectionArea(
+      child: ListView(
+        controller: controller,
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
+        children: entries,
+      ),
     );
   }
 }
@@ -336,7 +339,7 @@ class _MessageBubble extends StatelessWidget {
               : colors.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(18),
         ),
-        child: SelectableText(message.content),
+        child: MarkdownText(message.content),
       ),
     );
   }
@@ -357,7 +360,7 @@ class _StreamingBubble extends StatelessWidget {
         color: Theme.of(context).colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(18),
       ),
-      child: SelectableText(text),
+      child: MarkdownText(text),
     ),
   );
 }

@@ -80,13 +80,17 @@ class HomeScreen extends StatelessWidget {
                 LayoutBuilder(
                   builder: (context, constraints) {
                     final columns = constraints.maxWidth >= 760 ? 4 : 2;
+                    final textScale = MediaQuery.textScalerOf(
+                      context,
+                    ).scale(1).clamp(1.0, 1.6).toDouble();
                     return GridView.count(
                       crossAxisCount: columns,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       mainAxisSpacing: 12,
                       crossAxisSpacing: 12,
-                      childAspectRatio: columns == 4 ? 0.95 : 1.03,
+                      childAspectRatio:
+                          (columns == 4 ? 0.95 : 1.03) / textScale,
                       children: [
                         FeatureActionCard(
                           icon: Icons.document_scanner_rounded,

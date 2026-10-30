@@ -8,7 +8,7 @@ bytes only in memory. Cloud Storage is not required.
 Before AI or Firestore is used, the document layer verifies:
 
 - the `.pdf` filename extension;
-- a non-empty file no larger than 14 MB;
+- a non-empty file no larger than 10 MB;
 - a PDF header within the first 1,024 bytes;
 - a PDF end marker within the final 2,048 bytes.
 

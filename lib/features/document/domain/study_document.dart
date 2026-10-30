@@ -31,7 +31,7 @@ class StudyDocument {
     if (byteLength > MediaConfig.pdfMaxBytes) {
       throw const AppException(
         type: AppErrorType.invalidDocument,
-        message: 'That PDF is too large. Choose a document under 14 MB.',
+        message: 'That PDF is too large. Choose a document under 10 MB.',
       );
     }
 

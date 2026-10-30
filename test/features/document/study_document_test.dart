@@ -65,7 +65,7 @@ void main() {
         isA<AppException>().having(
           (error) => error.message,
           'message',
-          contains('under 14 MB'),
+          contains('under 10 MB'),
         ),
       ),
     );

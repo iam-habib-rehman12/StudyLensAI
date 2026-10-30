@@ -98,7 +98,7 @@ score -> View saved progress.
 - Calculate questions, quizzes, sessions, accuracy, XP, and level.
 - Add useful loading, empty, offline, and error states.
 
-### Day 13 - Reliability and visual polish
+### Day 13 - Reliability and visual polish (complete)
 
 - Complete light/dark themes, responsive behavior, and accessibility.
 - Prevent duplicate submissions and normalize user-facing exceptions.

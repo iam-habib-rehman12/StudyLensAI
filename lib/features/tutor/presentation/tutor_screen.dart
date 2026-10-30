@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/config/ai_config.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/markdown_text.dart';
 import '../application/tutor_controller.dart';
 import '../application/tutor_state.dart';
 import '../domain/study_message.dart';
@@ -245,7 +246,7 @@ class _MessageBubble extends StatelessWidget {
               bottomRight: Radius.circular(isStudent ? 5 : 20),
             ),
           ),
-          child: Text(
+          child: MarkdownText(
             message.content,
             style: theme.textTheme.bodyLarge?.copyWith(height: 1.45),
           ),
@@ -291,7 +292,7 @@ class _StreamingBubble extends StatelessWidget {
                   Text('StudyLens is thinking...'),
                 ],
               )
-            : Text(
+            : MarkdownText(
                 text,
                 style: theme.textTheme.bodyLarge?.copyWith(height: 1.45),
               ),

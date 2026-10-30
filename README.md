@@ -8,6 +8,21 @@ students learn from typed questions, photographs, and PDFs using multimodal AI.
 The project is being delivered incrementally over 14 build-gated days. See
 [the 14-day roadmap](docs/14_DAY_ROADMAP.md) for scope and status.
 
+## Highlights
+
+- Multimodal AI tutor: typed questions, camera/gallery images, and PDFs through
+  Firebase AI Logic, with streamed answers and bounded conversational context
+- Schema-constrained quiz generation with strict domain validation and
+  deterministic scoring with XP and mistake review
+- Real Firestore persistence for conversations, quizzes, results, history, and
+  derived progress metrics - no fake AI or mock study data
+- Feature-based clean architecture: widgets never call Firebase, Gemini,
+  Firestore, camera, or document APIs directly
+- 42 test files (unit, widget, integration) plus Firestore security-rule tests,
+  enforced as CI gates
+- Explicit loading, empty, offline, error, and permission states with recovery
+  actions, light/dark themes, and accessibility labels
+
 ## Current status
 
 Days 1-4 establish the Material 3 foundation, environment-safe Firebase and
@@ -57,6 +72,12 @@ metrics are derived from saved results. Loading, empty, offline, and error
 states all have recovery actions. See
 [history and progress](docs/HISTORY_AND_PROGRESS.md).
 
+Day 13 adds reliability and polish: safe Markdown rendering for AI answers,
+a lower 10 MB PDF ceiling, picker timeouts and interruption recovery, thumbnail
+decoding, semantic labels, adaptive large-text layouts, and a large-text
+regression test. See
+[reliability and polish](docs/RELIABILITY_AND_POLISH.md).
+
 The analyzer, automated tests, Android debug APK build, and Firestore security
 rules tests are configured as gates.
 
@@ -90,6 +111,18 @@ UI -> Controller/Provider -> Repository -> Service -> Firebase/Gemini/Device
 UI widgets must not invoke Firebase, Gemini, Firestore, camera, document, or
 storage APIs directly.
 
+## Documentation
+
+- [14-day roadmap](docs/14_DAY_ROADMAP.md) - scope, status, and acceptance path
+- [Firebase setup](docs/FIREBASE_SETUP.md) - connect a Firebase project
+- [Firestore schema](docs/FIRESTORE_SCHEMA.md) - persistent data shape
+- [AI tutor](docs/AI_TUTOR.md) - prompts, streaming, and failure handling
+- [Image intake](docs/IMAGE_INTAKE.md) and [image analysis](docs/IMAGE_ANALYSIS.md)
+- [PDF intelligence](docs/PDF_INTELLIGENCE.md)
+- [Quiz generation](docs/QUIZ_GENERATION.md) and [quiz player](docs/QUIZ_PLAYER.md)
+- [History and progress](docs/HISTORY_AND_PROGRESS.md)
+- [Reliability and polish](docs/RELIABILITY_AND_POLISH.md)
+
 ## Run
 
 Requirements:
@@ -113,3 +146,7 @@ npm run test:rules
 
 To connect a Firebase project, follow [docs/FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md).
 Do not commit service-account keys or private server credentials to this client.
+
+## License
+
+Released under the [MIT License](LICENSE).
