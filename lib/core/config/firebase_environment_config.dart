@@ -9,6 +9,8 @@ class FirebaseEnvironmentConfig {
     this.authDomain,
     this.storageBucket,
     this.useEmulators = false,
+    this.useDebugAppCheck = false,
+    this.debugAppCheckToken = '',
     this.emulatorHost = '10.0.2.2',
   });
 
@@ -21,6 +23,8 @@ class FirebaseEnvironmentConfig {
       authDomain: String.fromEnvironment('FIREBASE_AUTH_DOMAIN'),
       storageBucket: String.fromEnvironment('FIREBASE_STORAGE_BUCKET'),
       useEmulators: bool.fromEnvironment('USE_FIREBASE_EMULATORS'),
+      useDebugAppCheck: bool.fromEnvironment('APP_CHECK_DEBUG'),
+      debugAppCheckToken: String.fromEnvironment('APP_CHECK_DEBUG_TOKEN'),
       emulatorHost: String.fromEnvironment(
         'FIREBASE_EMULATOR_HOST',
         defaultValue: '10.0.2.2',
@@ -35,6 +39,14 @@ class FirebaseEnvironmentConfig {
   final String? authDomain;
   final String? storageBucket;
   final bool useEmulators;
+
+  /// Demo-only flag. Allows a release build to use the App Check debug
+  /// provider after its debug token is registered. Never ship with this on.
+  final bool useDebugAppCheck;
+
+  /// Optional preset token for the Android App Check debug provider. When set,
+  /// the token must also be registered in Firebase Console.
+  final String debugAppCheckToken;
   final String emulatorHost;
 
   List<String> get missingKeys {

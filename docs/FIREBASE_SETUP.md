@@ -9,7 +9,9 @@ token, or password belongs in source control.
 1. Create a Firebase project.
 2. Register an Android application with package name
    `com.studylens.studylens_ai`.
-3. In Authentication, enable Email/Password.
+3. In Authentication, enable Email/Password. The verification and password
+   reset flows use Firebase's email templates; customize the sender and copy in
+   Firebase Console before the demo.
 4. Create a Cloud Firestore database and publish `firestore.rules`. The rules
    allow authenticated students to create and read only their own validated
    profile, sessions, messages, quizzes, and results. All other paths are

@@ -78,6 +78,22 @@ decoding, semantic labels, adaptive large-text layouts, and a large-text
 regression test. See
 [reliability and polish](docs/RELIABILITY_AND_POLISH.md).
 
+Day 14 completes the account lifecycle: verification emails, password reset,
+and password-confirmed account deletion with Firestore cleanup under
+owner-only delete rules. It also adds the device acceptance checklist and
+release-signing path. See
+[account lifecycle](docs/ACCOUNT_LIFECYCLE.md) and
+[acceptance](docs/ACCEPTANCE.md).
+
+A dependency-free observability layer reports uncaught framework, platform, and
+asynchronous errors through a pluggable `ErrorReporter`; the default logger
+writes to the platform log and release builds show a safe fallback widget. See
+[observability](docs/OBSERVABILITY.md).
+
+For the complete AI-enabled app on a physical phone, including App Check debug
+token registration and the demo release APK, see
+[Android phone setup](docs/ANDROID_DEVICE_SETUP.md).
+
 The analyzer, automated tests, Android debug APK build, and Firestore security
 rules tests are configured as gates.
 

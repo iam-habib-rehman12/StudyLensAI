@@ -83,6 +83,78 @@ class AuthController extends ChangeNotifier {
     }
   }
 
+  Future<bool> refreshUser() async {
+    if (_state.isSubmitting) return false;
+    _setState(_state.copyWith(isSubmitting: true, clearError: true));
+    try {
+      final user = await _repository.refreshUser();
+      _setAuthenticated(user);
+      return true;
+    } on AppException catch (error) {
+      _setSubmissionError(error.message);
+      return false;
+    } catch (_) {
+      _setSubmissionError(
+        'StudyLens could not refresh your account. Please try again.',
+      );
+      return false;
+    }
+  }
+
+  Future<bool> sendPasswordReset(String email) async {
+    if (_state.isSubmitting) return false;
+    _setState(_state.copyWith(isSubmitting: true, clearError: true));
+    try {
+      await _repository.sendPasswordResetEmail(email);
+      _setState(_state.copyWith(isSubmitting: false));
+      return true;
+    } on AppException catch (error) {
+      _setSubmissionError(error.message);
+      return false;
+    } catch (_) {
+      _setSubmissionError(
+        'StudyLens could not send the reset email. Please try again.',
+      );
+      return false;
+    }
+  }
+
+  Future<bool> resendVerificationEmail() async {
+    if (_state.isSubmitting) return false;
+    _setState(_state.copyWith(isSubmitting: true, clearError: true));
+    try {
+      await _repository.sendEmailVerification();
+      _setState(_state.copyWith(isSubmitting: false));
+      return true;
+    } on AppException catch (error) {
+      _setSubmissionError(error.message);
+      return false;
+    } catch (_) {
+      _setSubmissionError(
+        'StudyLens could not send the verification email. Please try again.',
+      );
+      return false;
+    }
+  }
+
+  Future<bool> deleteAccount({required String password}) async {
+    if (_state.isSubmitting) return false;
+    _setState(_state.copyWith(isSubmitting: true, clearError: true));
+    try {
+      await _repository.deleteAccount(password: password);
+      _setState(const AuthState(status: AuthStatus.unauthenticated));
+      return true;
+    } on AppException catch (error) {
+      _setSubmissionError(error.message);
+      return false;
+    } catch (_) {
+      _setSubmissionError(
+        'StudyLens could not delete your account. Sign in again and retry.',
+      );
+      return false;
+    }
+  }
+
   void clearError() {
     if (_state.errorMessage == null) return;
     _setState(_state.copyWith(clearError: true));

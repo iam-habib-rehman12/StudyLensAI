@@ -222,6 +222,14 @@ describe('student profiles', () => {
     await assertFails(setDoc(doc(db, 'users', 'alice'), missingXp));
   });
 
+  test('owner can delete the profile but another user cannot', async () => {
+    await assertSucceeds(
+      setDoc(doc(alice(), 'users', 'alice'), profileData()),
+    );
+    await assertFails(deleteDoc(doc(bob(), 'users', 'alice')));
+    await assertSucceeds(deleteDoc(doc(alice(), 'users', 'alice')));
+  });
+
   test('profile fields are immutable after creation', async () => {
     await assertSucceeds(
       setDoc(doc(alice(), 'users', 'alice'), profileData()),
@@ -319,7 +327,7 @@ describe('study sessions', () => {
     );
   });
 
-  test('sessions cannot be deleted', async () => {
+  test('owner can delete a session but another user cannot', async () => {
     await assertSucceeds(
       setDoc(
         doc(alice(), 'users', 'alice', 'sessions', 'session-1'),
@@ -328,6 +336,9 @@ describe('study sessions', () => {
     );
 
     await assertFails(
+      deleteDoc(doc(bob(), 'users', 'alice', 'sessions', 'session-1')),
+    );
+    await assertSucceeds(
       deleteDoc(doc(alice(), 'users', 'alice', 'sessions', 'session-1')),
     );
   });
@@ -385,6 +396,51 @@ describe('study messages', () => {
     );
   });
 
+  test('owner can delete a message but another user cannot', async () => {
+    await seedSession();
+    await assertSucceeds(
+      setDoc(
+        doc(
+          alice(),
+          'users',
+          'alice',
+          'sessions',
+          'session-1',
+          'messages',
+          'message-1',
+        ),
+        messageData(),
+      ),
+    );
+
+    await assertFails(
+      deleteDoc(
+        doc(
+          bob(),
+          'users',
+          'alice',
+          'sessions',
+          'session-1',
+          'messages',
+          'message-1',
+        ),
+      ),
+    );
+    await assertSucceeds(
+      deleteDoc(
+        doc(
+          alice(),
+          'users',
+          'alice',
+          'sessions',
+          'session-1',
+          'messages',
+          'message-1',
+        ),
+      ),
+    );
+  });
+
   test('another user cannot read or write messages', async () => {
     await seedSession();
     await assertSucceeds(
@@ -436,6 +492,18 @@ describe('quizzes and results', () => {
     );
   });
 
+  test('owner can delete a quiz but another user cannot', async () => {
+    await assertSucceeds(
+      setDoc(doc(alice(), 'users', 'alice', 'quizzes', 'quiz-1'), quizData()),
+    );
+    await assertFails(
+      deleteDoc(doc(bob(), 'users', 'alice', 'quizzes', 'quiz-1')),
+    );
+    await assertSucceeds(
+      deleteDoc(doc(alice(), 'users', 'alice', 'quizzes', 'quiz-1')),
+    );
+  });
+
   test('another user cannot read a quiz', async () => {
     await seedQuiz();
     await assertFails(getDoc(doc(bob(), 'users', 'alice', 'quizzes', 'quiz-1')));
@@ -449,6 +517,22 @@ describe('quizzes and results', () => {
         doc(db, 'users', 'alice', 'quizResults', 'result-1'),
         quizResultData(),
       ),
+    );
+  });
+
+  test('owner can delete a result but another user cannot', async () => {
+    await seedQuiz();
+    await assertSucceeds(
+      setDoc(
+        doc(alice(), 'users', 'alice', 'quizResults', 'result-1'),
+        quizResultData(),
+      ),
+    );
+    await assertFails(
+      deleteDoc(doc(bob(), 'users', 'alice', 'quizResults', 'result-1')),
+    );
+    await assertSucceeds(
+      deleteDoc(doc(alice(), 'users', 'alice', 'quizResults', 'result-1')),
     );
   });
 

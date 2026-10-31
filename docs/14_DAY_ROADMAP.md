@@ -105,12 +105,16 @@ score -> View saved progress.
 - Add retry behavior, connectivity cues, and polished loading feedback.
 - Run the complete unit/widget/integration test suite.
 
-### Day 14 - Acceptance and semester demo
+### Day 14 - Acceptance and semester demo (in progress)
 
 - Exercise the full MVP acceptance path on Android.
 - Test circuit-image, lecture-PDF, and generated-quiz demo scenarios.
 - Verify Firestore security boundaries and App Check configuration.
 - Produce a release APK and finalize setup/demo documentation.
+
+Code, rules, release signing, and the acceptance checklist are complete. The
+final on-device walkthrough remains a manual gate; see
+[docs/ACCEPTANCE.md](ACCEPTANCE.md).
 
 ## Architecture rule
 

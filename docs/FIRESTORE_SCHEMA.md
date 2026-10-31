@@ -64,6 +64,19 @@ player writes it with a server timestamp. Day 12 derives questions, quizzes,
 accuracy, XP, and level from these results on the client. The stored profile
 aggregate fields remain read-only in the rules and are not updated.
 
+## Account deletion
+
+Rules allow the authenticated owner to delete their profile, sessions, messages,
+quizzes, and quiz results. Account deletion is password-confirmed and runs
+client-side in this order:
+
+```text
+messages -> sessions -> quizzes -> quizResults -> profile -> Auth user
+```
+
+The Auth user is deleted only after the Firestore cleanup succeeds. A production
+deployment with large histories should move this cleanup to a server-side job.
+
 ## Reliability and security
 
 - Firebase values and server timestamps are translated in the centralized

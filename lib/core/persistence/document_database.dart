@@ -20,6 +20,13 @@ abstract interface class DocumentDatabase {
 
   Future<Map<String, Object?>?> getDocument(String path);
 
+  Future<List<StoredDocument>> getCollection({
+    required String path,
+    int? limit,
+  });
+
+  Future<void> deleteDocument(String path);
+
   Stream<List<StoredDocument>> watchCollection({
     required String path,
     required String orderBy,

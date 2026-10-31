@@ -37,6 +37,25 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Future<void> _forgotPassword() async {
+    final email = _emailController.text.trim();
+    if (Validators.email(email) != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter your email address first.')),
+      );
+      return;
+    }
+    final sent = await widget.controller.sendPasswordReset(email);
+    if (!mounted) return;
+    final message = sent
+        ? 'Password reset email sent. Check your inbox.'
+        : widget.controller.state.errorMessage ??
+              'StudyLens could not send the reset email.';
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -116,7 +135,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            key: const Key('forgot-password'),
+                            onPressed: state.isSubmitting
+                                ? null
+                                : _forgotPassword,
+                            child: const Text('Forgot password?'),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
                         FilledButton(
                           onPressed: state.isSubmitting ? null : _submit,
                           child: state.isSubmitting

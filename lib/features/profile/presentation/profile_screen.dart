@@ -53,10 +53,66 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 18),
-                        const Chip(
-                          avatar: Icon(Icons.verified_user_rounded, size: 18),
-                          label: Text('Firebase account'),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            Chip(
+                              avatar: Icon(
+                                user.isEmailVerified
+                                    ? Icons.verified_rounded
+                                    : Icons.mark_email_unread_outlined,
+                                size: 18,
+                              ),
+                              label: Text(
+                                user.isEmailVerified
+                                    ? 'Email verified'
+                                    : 'Email not verified',
+                              ),
+                            ),
+                            const Chip(
+                              avatar: Icon(
+                                Icons.verified_user_rounded,
+                                size: 18,
+                              ),
+                              label: Text('Firebase account'),
+                            ),
+                          ],
                         ),
+                        if (!user.isEmailVerified) ...[
+                          const SizedBox(height: 4),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 4,
+                            children: [
+                              TextButton.icon(
+                                key: const Key('resend-verification'),
+                                onPressed: authController.state.isSubmitting
+                                    ? null
+                                    : () => _resendVerification(context),
+                                icon: const Icon(
+                                  Icons.outgoing_mail,
+                                  size: 18,
+                                ),
+                                label: const Text(
+                                  'Resend verification email',
+                                ),
+                              ),
+                              TextButton.icon(
+                                key: const Key('refresh-verification'),
+                                onPressed: authController.state.isSubmitting
+                                    ? null
+                                    : () => _refreshVerification(context),
+                                icon: const Icon(
+                                  Icons.refresh_rounded,
+                                  size: 18,
+                                ),
+                                label: const Text('Refresh status'),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -70,7 +126,7 @@ class ProfileScreen extends StatelessWidget {
                         title: const Text('Appearance'),
                         subtitle: const Text('Follows your device theme'),
                         trailing: const Icon(Icons.chevron_right_rounded),
-                        onTap: () => _showScheduled(context),
+                        onTap: () => _showThemeInfo(context),
                       ),
                       const Divider(height: 1, indent: 64),
                       const ListTile(
@@ -89,6 +145,21 @@ class ProfileScreen extends StatelessWidget {
                   icon: const Icon(Icons.logout_rounded),
                   label: const Text('Sign out'),
                 ),
+                const SizedBox(height: 10),
+                TextButton.icon(
+                  key: const Key('delete-account-button'),
+                  onPressed: authController.state.isSubmitting
+                      ? null
+                      : () => _deleteAccount(context),
+                  icon: Icon(
+                    Icons.delete_forever_rounded,
+                    color: theme.colorScheme.error,
+                  ),
+                  label: Text(
+                    'Delete account',
+                    style: TextStyle(color: theme.colorScheme.error),
+                  ),
+                ),
                 if (authController.state.errorMessage != null) ...[
                   const SizedBox(height: 14),
                   Text(
@@ -105,6 +176,100 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _resendVerification(BuildContext context) async {
+    final sent = await authController.resendVerificationEmail();
+    if (!context.mounted) return;
+    final message = sent
+        ? 'Verification email sent. Check your inbox.'
+        : authController.state.errorMessage ??
+              'StudyLens could not send the verification email.';
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _refreshVerification(BuildContext context) async {
+    final refreshed = await authController.refreshUser();
+    if (!context.mounted) return;
+    final verified = authController.state.user?.isEmailVerified ?? false;
+    final message = refreshed
+        ? (verified
+              ? 'Email verified.'
+              : 'Email not verified yet. Check your inbox and try again.')
+        : authController.state.errorMessage ??
+              'StudyLens could not refresh your account.';
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _deleteAccount(BuildContext context) async {
+    var password = '';
+    final confirmed = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        final colors = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
+          title: const Text('Delete account?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'This permanently deletes your account and all saved study '
+                'sessions, messages, quizzes, and results. Enter your password '
+                'to confirm.',
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                key: const Key('delete-account-password'),
+                autofocus: true,
+                obscureText: true,
+                onChanged: (value) => password = value,
+                decoration: const InputDecoration(labelText: 'Password'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              key: const Key('confirm-delete-account'),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(0, 44),
+                backgroundColor: colors.error,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(password),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed == null || !context.mounted) return;
+    if (confirmed.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enter your password to delete your account.'),
+        ),
+      );
+      return;
+    }
+
+    final deleted = await authController.deleteAccount(password: confirmed);
+    if (!context.mounted || deleted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          authController.state.errorMessage ??
+              'StudyLens could not delete your account.',
+        ),
+      ),
+    );
+  }
+
   String _initials(String name) {
     final words = name
         .trim()
@@ -115,10 +280,10 @@ class ProfileScreen extends StatelessWidget {
     return initials.isEmpty ? 'S' : initials;
   }
 
-  void _showScheduled(BuildContext context) {
+  void _showThemeInfo(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Theme controls are scheduled for the polish milestone.'),
+        content: Text('StudyLens follows your device light or dark theme.'),
         showCloseIcon: true,
       ),
     );

@@ -1,13 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'app.dart';
 import 'core/ai/firebase_ai_service.dart';
+import 'core/observability/debug_error_reporter.dart';
+import 'core/observability/error_handlers.dart';
 import 'core/config/firebase_environment_config.dart';
 import 'core/persistence/firestore_document_database.dart';
 import 'core/utils/id_generator.dart';
 import 'features/auth/application/auth_controller.dart';
 import 'features/auth/data/firebase_auth_repository.dart';
 import 'features/auth/data/firebase_auth_service.dart';
+import 'features/auth/data/firestore_user_data_cleaner.dart';
 import 'features/auth/data/firestore_user_profile_service.dart';
 import 'features/bootstrap/application/bootstrap_controller.dart';
 import 'features/bootstrap/data/firebase_bootstrap_service.dart';
@@ -25,20 +30,35 @@ import 'features/tutor/data/firestore_study_message_repository.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  const reporter = DebugErrorReporter();
+  installErrorHandlers(reporter);
+  runZonedGuarded(
+    _startApp,
+    (error, stackTrace) => reporter.report(
+      error,
+      stackTrace,
+      context: 'Uncaught asynchronous error',
+      fatal: true,
+    ),
+  );
+}
+
+void _startApp() {
   final firebaseConfig = FirebaseEnvironmentConfig.fromEnvironment();
   final bootstrapController = BootstrapController(
     FirebaseBootstrapService(config: firebaseConfig),
   );
+  final database = FirestoreDocumentDatabase();
   final authController = AuthController(
     FirebaseAuthRepository(
       FirebaseAuthService(),
       FirestoreUserProfileService(),
+      FirestoreUserDataCleaner(database),
     ),
   );
   final shellController = ShellController();
   final imageIntakeService = DeviceImageIntakeService();
   final documentIntakeService = DeviceDocumentIntakeService();
-  final database = FirestoreDocumentDatabase();
   final aiService = FirebaseAiService();
   final sessionRepository = FirestoreStudySessionRepository(database);
   final messageRepository = FirestoreStudyMessageRepository(database);

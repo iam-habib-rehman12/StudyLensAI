@@ -35,6 +35,37 @@ class FirestoreDocumentDatabase implements DocumentDatabase {
   }
 
   @override
+  Future<List<StoredDocument>> getCollection({
+    required String path,
+    int? limit,
+  }) async {
+    try {
+      Query<Map<String, dynamic>> query = _instance.collection(path);
+      if (limit != null) query = query.limit(limit);
+      final snapshot = await query.get();
+      return snapshot.docs
+          .map(
+            (document) => StoredDocument(
+              id: document.id,
+              data: _decodeMap(document.data()),
+            ),
+          )
+          .toList(growable: false);
+    } on FirebaseException catch (error) {
+      throw _mapFirebaseError(error);
+    }
+  }
+
+  @override
+  Future<void> deleteDocument(String path) async {
+    try {
+      await _instance.doc(path).delete();
+    } on FirebaseException catch (error) {
+      throw _mapFirebaseError(error);
+    }
+  }
+
+  @override
   Stream<List<StoredDocument>> watchCollection({
     required String path,
     required String orderBy,

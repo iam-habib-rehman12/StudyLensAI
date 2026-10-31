@@ -36,7 +36,8 @@ service cloud.firestore {
         && request.resource.data.correctAnswers == 0;
 
       allow read: if isOwner(userId);
-      allow update, delete: if false;
+      allow update: if false;
+      allow delete: if isOwner(userId);
 
       match /sessions/{sessionId} {
         allow create: if isOwner(userId)
@@ -70,7 +71,7 @@ service cloud.firestore {
           && request.resource.data.status == 'completed'
           && request.resource.data.updatedAt == request.time;
 
-        allow delete: if false;
+        allow delete: if isOwner(userId);
 
         match /messages/{messageId} {
           allow create: if isOwner(userId)
@@ -93,7 +94,8 @@ service cloud.firestore {
             && request.resource.data.createdAt == request.time;
 
           allow read: if isOwner(userId);
-          allow update, delete: if false;
+          allow update: if false;
+          allow delete: if isOwner(userId);
         }
       }
 
@@ -122,7 +124,8 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
 
         allow read: if isOwner(userId);
-        allow update, delete: if false;
+        allow update: if false;
+        allow delete: if isOwner(userId);
       }
 
       match /quizResults/{resultId} {
@@ -157,7 +160,8 @@ service cloud.firestore {
           && request.resource.data.completedAt == request.time;
 
         allow read: if isOwner(userId);
-        allow update, delete: if false;
+        allow update: if false;
+        allow delete: if isOwner(userId);
       }
     }
 

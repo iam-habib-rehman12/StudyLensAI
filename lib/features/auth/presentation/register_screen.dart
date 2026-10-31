@@ -38,6 +38,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       password: _passwordController.text,
     );
     if (registered && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Account created. Check your email to verify your address.',
+          ),
+        ),
+      );
       Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }

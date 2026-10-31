@@ -45,6 +45,48 @@ class FirebaseAuthService implements AuthService {
   }
 
   @override
+  Future<void> sendEmailVerification() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(code: 'user-not-found');
+    }
+    if (user.emailVerified) return;
+    await user.sendEmailVerification();
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) {
+    return _auth.sendPasswordResetEmail(email: email);
+  }
+
+  @override
+  Future<void> reauthenticateWithPassword(String password) async {
+    final user = _auth.currentUser;
+    final email = user?.email;
+    if (user == null || email == null) {
+      throw FirebaseAuthException(code: 'user-not-found');
+    }
+    final credential = EmailAuthProvider.credential(
+      email: email,
+      password: password,
+    );
+    await user.reauthenticateWithCredential(credential);
+  }
+
+  @override
+  Future<AuthAccount> reloadAccount() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(code: 'user-not-found');
+    }
+    await user.reload();
+    return _requireAccount(_auth.currentUser);
+  }
+
+  @override
+  String? get currentUserId => _auth.currentUser?.uid;
+
+  @override
   Future<void> deleteCurrentAccount() async {
     await _auth.currentUser?.delete();
   }
@@ -66,6 +108,7 @@ class FirebaseAuthService implements AuthService {
       uid: user.uid,
       email: user.email ?? '',
       displayName: user.displayName,
+      emailVerified: user.emailVerified,
     );
   }
 }

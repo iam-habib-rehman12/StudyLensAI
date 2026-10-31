@@ -42,6 +42,18 @@ abstract final class FirebaseAuthErrorMapper {
         message: 'Too many attempts. Please wait and try again.',
         cause: error,
       ),
+      'requires-recent-login' ||
+      'user-token-expired' => AppException(
+        type: AppErrorType.authentication,
+        message: 'Sign in again before deleting your account.',
+        cause: error,
+      ),
+      'operation-not-allowed' => AppException(
+        type: AppErrorType.configuration,
+        message:
+            'Email/password sign-in is not enabled for this Firebase project.',
+        cause: error,
+      ),
       _ => AppException(
         type: AppErrorType.authentication,
         message:

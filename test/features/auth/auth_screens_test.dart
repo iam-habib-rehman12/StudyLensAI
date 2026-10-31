@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:studylens_ai/app.dart';
 import 'package:studylens_ai/core/errors/app_exception.dart';
 import 'package:studylens_ai/features/auth/application/auth_controller.dart';
+import 'package:studylens_ai/features/auth/presentation/login_screen.dart';
 import 'package:studylens_ai/features/bootstrap/application/bootstrap_controller.dart';
 import 'package:studylens_ai/features/shell/application/shell_controller.dart';
 
@@ -101,5 +102,29 @@ void main() {
 
     expect(find.text('Passwords do not match.'), findsOneWidget);
     expect(repository.registerCalls, 0);
+  });
+
+  testWidgets('sends a password reset from the login screen', (tester) async {
+    final repository = FakeAuthRepository();
+    addTearDown(repository.dispose);
+    final controller = AuthController(repository);
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(home: LoginScreen(controller: controller)),
+    );
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'student@example.com',
+    );
+    await tester.tap(find.byKey(const Key('forgot-password')));
+    await tester.pumpAndSettle();
+
+    expect(repository.passwordResetCalls, 1);
+    expect(repository.lastResetEmail, 'student@example.com');
+    expect(
+      find.text('Password reset email sent. Check your inbox.'),
+      findsOneWidget,
+    );
   });
 }

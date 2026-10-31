@@ -11,5 +11,13 @@ abstract interface class AuthRepository {
     required String password,
   });
 
+  Future<void> sendEmailVerification();
+
+  Future<AppUser> refreshUser();
+
+  Future<void> sendPasswordResetEmail(String email);
+
+  Future<void> deleteAccount({required String password});
+
   Future<void> signOut();
 }

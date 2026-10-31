@@ -43,6 +43,20 @@ local; no HTML or WebView is involved.
   asserts no overflow.
 - Light and dark themes continue to follow the system setting.
 
+## Shared-device privacy
+
+Firestore persistence is enabled for the session, but cached documents from a
+previous process are cleared at startup before persistence is configured. This
+prevents a different student on a shared device from seeing stale local data
+after a restart.
+
+## Observability
+
+Uncaught framework, platform, and asynchronous errors go through a pluggable
+`ErrorReporter`. The default reporter logs to `dart:developer`; release builds
+show a safe fallback widget instead of the red error screen. See
+[observability](OBSERVABILITY.md).
+
 ## Existing safeguards
 
 - Controllers reject duplicate submissions while saving or streaming.

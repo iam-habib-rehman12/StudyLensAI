@@ -16,10 +16,28 @@ class FakeDocumentDatabase implements DocumentDatabase {
   final Map<String, Map<String, Object?>> documents = {};
   final Map<String, List<StoredDocument>> collections = {};
   final List<DatabaseWrite> writes = [];
+  final List<String> deleted = [];
 
   @override
   Future<Map<String, Object?>?> getDocument(String path) async {
     return documents[path];
+  }
+
+  @override
+  Future<List<StoredDocument>> getCollection({
+    required String path,
+    int? limit,
+  }) async {
+    final values = collections[path] ?? const <StoredDocument>[];
+    return limit == null
+        ? values
+        : values.take(limit).toList(growable: false);
+  }
+
+  @override
+  Future<void> deleteDocument(String path) async {
+    deleted.add(path);
+    documents.remove(path);
   }
 
   @override

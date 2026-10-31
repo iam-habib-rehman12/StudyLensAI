@@ -20,8 +20,8 @@ class FirestoreQuizResultRepository implements QuizResultRepository {
 
   @override
   Stream<List<QuizResult>> watchRecentResults(String userId, {int limit = 20}) {
-    if (limit < 1 || limit > 100) {
-      throw ArgumentError.value(limit, 'limit', 'Must be between 1 and 100.');
+    if (limit < 1 || limit > 1000) {
+      throw ArgumentError.value(limit, 'limit', 'Must be between 1 and 1000.');
     }
     return _database
         .watchCollection(

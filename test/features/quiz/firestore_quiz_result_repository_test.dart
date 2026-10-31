@@ -49,6 +49,24 @@ void main() {
     expect(results.single.accuracy, 0.5);
   });
 
+  test('accepts overview windows up to 1000 and rejects out-of-range limits', () async {
+    final database = FakeDocumentDatabase();
+    final repository = FirestoreQuizResultRepository(database);
+
+    expect(
+      repository.watchRecentResults('user-1', limit: 500).first,
+      completion(isEmpty),
+    );
+    expect(
+      () => repository.watchRecentResults('user-1', limit: 0),
+      throwsArgumentError,
+    );
+    expect(
+      () => repository.watchRecentResults('user-1', limit: 1001),
+      throwsArgumentError,
+    );
+  });
+
   test('rejects a stored result whose owner does not match its path', () async {
     final database = FakeDocumentDatabase();
     final stored = result().toMap()
